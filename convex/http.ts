@@ -180,4 +180,59 @@ http.route({
   }),
 });
 
+// ---- POST /api/viralAction ----
+http.route({
+  path: "/api/viralAction",
+  method: "OPTIONS",
+  handler: preflight,
+});
+http.route({
+  path: "/api/viralAction",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "invalid JSON body" }, 400);
+    }
+    if (body.kind !== "nominate" && body.kind !== "share") {
+      return json({ error: "invalid action kind" }, 400);
+    }
+    if (
+      typeof body.visitorId !== "string" ||
+      typeof body.marketId !== "string" ||
+      typeof body.question !== "string"
+    ) {
+      return json({ error: "visitorId, marketId, and question are required" }, 400);
+    }
+    const channels = ["x", "telegram", "whatsapp", "native", "copy"] as const;
+    const selectedChannel = channels.find((value) => value === body.channel);
+    const result = await ctx.runMutation(api.viralActions.record, {
+      visitorId: body.visitorId,
+      kind: body.kind,
+      marketId: body.marketId,
+      question: body.question,
+      channel: selectedChannel,
+      referrer: typeof body.referrer === "string" ? body.referrer : undefined,
+    });
+    return json(result, result.inserted ? 201 : 200);
+  }),
+});
+
+// ---- GET /api/viralStats ----
+http.route({
+  path: "/api/viralStats",
+  method: "OPTIONS",
+  handler: preflight,
+});
+http.route({
+  path: "/api/viralStats",
+  method: "GET",
+  handler: httpAction(async (ctx) => {
+    const stats = await ctx.runQuery(api.viralActions.publicStats, {});
+    return json(stats);
+  }),
+});
+
 export default http;

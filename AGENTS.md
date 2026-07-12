@@ -2,7 +2,7 @@
 
 > Single source of truth for every agent (Claude, Codex, Hermes) working on WYRD.
 > **Read this first. Update it after any meaningful change.** Keep it terse and current.
-> Last updated: 2026-07-12 by Codex (session: demo wiring).
+> Last updated: 2026-07-12 by Codex (session: L4/L5 virality loop).
 
 ## What WYRD is
 An autonomous agent that hunts the weirdest live Polymarket bets and delivers them
@@ -62,10 +62,13 @@ Polymarket ──(edge: Vercel /api/weird)────────► scored wei
 | 3 | `convex/` backend | Claude + Codex | ✅ production at `hip-squirrel-523`; Vercel connected |
 | 4 | `skills/wyrd` Hermes skills | Claude | ✅ registered in Hermes; runs live via Jina fallback |
 | 5 | `landing/` (Next.js/Vercel) | Codex | ✅ live; editorial top-10 dashboard + share actions |
-| — | Telegram | Codex | ✅ public webhook active at `/api/telegram`; `/start` writes Convex |
+| — | Telegram | Codex | ✅ Hermes polling gateway paired to owner; production webhook code retained |
 | — | X publishing | Codex | ✅ 13 approved drops live with source replies + Convex receipts |
 | — | Unified publisher | Codex | ✅ guarded preview/publish path for X → Convex → Telegram |
 | — | Share QR | Codex | ✅ scannable WYRD poster at `/wyrd-qr.png`; exact URL decode verified |
+| — | Public Weirdness Jury | Codex | ✅ one-tap nominations + deduped viral events in production Convex |
+| — | Viral share objects | Codex | ✅ per-market pages, dynamic OG cards, referral IDs, X/WhatsApp/native share loop |
+| — | Judge proof mode | Codex | ✅ `/proof` reads production Convex live; conservative L1–L5 banding |
 | — | Linkup context | Codex | ✅ integrated; 429/no-credit falls back to audited market-only mode |
 | — | wyrd.money domain | pending | ⬜ optional after launch |
 
@@ -94,10 +97,24 @@ See `skills/wyrd/wyrd.env.example`, `landing/.env.example`, and `RUNBOOK.md`.
   reached the now-linked Telegram subscriber as well as X and Convex.
 - 2026-07-12: generated a print/share QR poster for the canonical Vercel URL;
   source generator and exported asset are committed for reproducible updates.
+- 2026-07-12: handbook audit identified the 25x Virality root parameter as the
+  highest leverage. Added a real first-use action (nominate a market), not a
+  pageview proxy; one browser identity can only count once per market.
+- 2026-07-12: every Weird Index market is now a recursive viral object with a
+  dynamic OG card and referral-bearing share page. Convex separately proves
+  unique jurors, nominations, share intents, and referred jurors.
+- 2026-07-12: jury identities are server-issued anonymous UUIDs in signed,
+  HttpOnly cookies. The action API rejects client-invented IDs; the signing
+  secret is a production-only sensitive Vercel environment variable.
+- 2026-07-12: `/proof` exposes judge-mode counters directly from production
+  Convex and uses `max(signups, uniqueJurors)`, never their unverified sum.
 
 ## Next up
 - [x] Validate and deploy `landing/` to Vercel.
 - [x] Set Vercel route env values for Convex, Telegram, and X.
 - [x] Deploy Convex and set `WYRD_CONVEX_URL` in Vercel + Hermes.
 - [x] Connect Telegram gateway and verify X OAuth identity.
-- [ ] Add `LINKUP_API_KEY`, approve/publish first three posts, then schedule cron loop.
+- [ ] Give mentors read-only Vercel Analytics and Convex dashboard access.
+- [ ] Drive the live jury from X/WhatsApp; target 26 actions for L3, 101 for L4,
+  251 for L5. Product code creates the loop; only real people create the score.
+- [ ] Fund Linkup or demo with credits before claiming its +25 power-up.

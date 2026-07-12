@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type Market = {
   id: string;
@@ -10,6 +11,14 @@ type Market = {
   volume: number;
   volume24hr?: number;
   weird?: { score: number; breakdown?: { india?: boolean } };
+};
+
+type ViralStats = {
+  uniqueJurors: number;
+  nominations: number;
+  shares: number;
+  referredJurors: number;
+  topMarkets: Array<{ marketId: string; question: string; nominations: number }>;
 };
 
 function money(n: number): string {
@@ -23,19 +32,63 @@ function shareCopy(market: Market): string {
   return `${market.question}\n${odds} · ${money(market.volume)} total volume\n\ncommentary, not financial advice. we don't bet, we watch.`;
 }
 
-function shareUrl(platform: "x" | "telegram", market: Market): string {
-  const dashboard = "https://wyrd-money.vercel.app/dashboard";
+function marketShareLink(market: Market, juror: string): string {
+  return `https://wyrd-money.vercel.app/m/${encodeURIComponent(market.id)}?ref=${encodeURIComponent(juror)}`;
+}
+
+function shareUrl(platform: "x" | "telegram" | "whatsapp", market: Market, juror: string): string {
+  const dashboard = marketShareLink(market, juror);
   const text = encodeURIComponent(shareCopy(market));
   if (platform === "x") {
     return `https://x.com/intent/post?text=${text}&url=${encodeURIComponent(dashboard)}`;
   }
+  if (platform === "whatsapp") {
+    return `https://wa.me/?text=${encodeURIComponent(`${shareCopy(market)}\n\n${dashboard}`)}`;
+  }
   return `https://t.me/share/url?url=${encodeURIComponent(dashboard)}&text=${text}`;
+}
+
+async function getVisitorId(): Promise<string> {
+  const response = await fetch("/api/juror", { cache: "no-store" });
+  if (!response.ok) return "";
+  const data = (await response.json()) as { id?: string };
+  return data.id || "";
 }
 
 export default function Dashboard() {
   const [markets, setMarkets] = useState<Market[] | null>(null);
   const [error, setError] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [juror, setJuror] = useState("");
+  const [nominated, setNominated] = useState<Set<string>>(new Set());
+  const [viralStats, setViralStats] = useState<ViralStats | null>(null);
+
+  async function loadViralStats() {
+    try {
+      const response = await fetch("/api/viral-stats");
+      if (response.ok) setViralStats((await response.json()) as ViralStats);
+    } catch { /* the index still works if the proof counter blinks */ }
+  }
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const referral = params.get("ref");
+    void getVisitorId().then((id) => {
+      setJuror(id);
+      if (referral && referral !== id) localStorage.setItem("wyrd-referrer", referral);
+      const stored = new Set<string>();
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (key?.startsWith("wyrd-nominated:") && localStorage.getItem(key) === "1") {
+          stored.add(key.slice("wyrd-nominated:".length));
+        }
+      }
+      setNominated(stored);
+    });
+    // Fetch resolves asynchronously; this does not synchronously cascade renders.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadViralStats();
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -63,10 +116,39 @@ export default function Dashboard() {
     [markets],
   );
 
+  async function recordAction(
+    market: Market,
+    kind: "nominate" | "share",
+    channel?: "x" | "telegram" | "whatsapp" | "native" | "copy",
+  ) {
+    if (!juror) return;
+    await fetch("/api/viral-action", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        visitorId: juror,
+        kind,
+        marketId: market.id,
+        question: market.question,
+        channel,
+        referrer: localStorage.getItem("wyrd-referrer") || undefined,
+      }),
+    }).catch(() => undefined);
+  }
+
+  async function nominate(market: Market) {
+    if (!juror || nominated.has(market.id)) return;
+    setNominated((current) => new Set(current).add(market.id));
+    localStorage.setItem(`wyrd-nominated:${market.id}`, "1");
+    await recordAction(market, "nominate");
+    await loadViralStats();
+  }
+
   return (
     <main className="dashboard-shell">
       <nav className="dashboard-nav" aria-label="Dashboard navigation">
-        <a className="wordmark" href="/"><span className="sigil">◉</span> WYRD</a>
+        <Link className="wordmark" href="/"><span className="sigil">◉</span> WYRD</Link>
         <div className="dashboard-nav-status"><span className="live-dot" /> live cultural telemetry</div>
         <div className="dashboard-nav-links">
           <a href="/x">X feed</a>
@@ -94,6 +176,19 @@ export default function Dashboard() {
         </div>
       </header>
 
+      <section className="jury-banner" aria-labelledby="jury-title">
+        <div>
+          <span>NEW / ONE TAP / ACTUAL DEMOCRACY, SOMEHOW</span>
+          <h2 id="jury-title">the public<br />weirdness jury</h2>
+        </div>
+        <p>nominate the market that most convincingly proves we should not have invented probability. your verdict becomes part of the live public record.</p>
+        <div className="jury-proof">
+          <b>{viralStats?.uniqueJurors ?? "—"}</b>
+          <span>unique jurors</span>
+          <small>deduped in Convex · no refresh farming</small>
+        </div>
+      </section>
+
       <section className="market-terminal" aria-labelledby="terminal-title">
         <div className="terminal-head">
           <div>
@@ -118,8 +213,12 @@ export default function Dashboard() {
                 <h2>{market.question}</h2>
                 <div className="index-actions">
                   <a href={market.url} target="_blank" rel="noreferrer">view source ↗</a>
-                  <a href={shareUrl("x", market)} target="_blank" rel="noreferrer" aria-label={`Share ${market.question} on X`}>share on X</a>
-                  <a href={shareUrl("telegram", market)} target="_blank" rel="noreferrer" aria-label={`Share ${market.question} on Telegram`}>send to Telegram</a>
+                  <a href={shareUrl("x", market, juror)} onClick={() => recordAction(market, "share", "x")} target="_blank" rel="noreferrer" aria-label={`Share ${market.question} on X`}>share evidence on X</a>
+                  <a href={shareUrl("whatsapp", market, juror)} onClick={() => recordAction(market, "share", "whatsapp")} target="_blank" rel="noreferrer" aria-label={`Share ${market.question} on WhatsApp`}>send to WhatsApp</a>
+                  <button className="nominate-button" type="button" disabled={!juror || nominated.has(market.id)} onClick={() => nominate(market)}>
+                    {nominated.has(market.id) ? "convicted ✓" : "nominate weirdest"}
+                  </button>
+                  <span className="jury-count">{viralStats?.topMarkets.find((row) => row.marketId === market.id)?.nominations ?? 0} verdicts</span>
                 </div>
               </div>
               <div className="index-metric">
@@ -142,6 +241,17 @@ export default function Dashboard() {
         </div>
       </section>
 
+      <section className="proof-ledger" aria-label="Live verified distribution proof">
+        <div><span>PUBLIC PROOF LEDGER</span><b>the numbers judges can actually inspect.</b><Link href="/proof">open judge mode ↗</Link></div>
+        <dl>
+          <div><dt>UNIQUE JURORS</dt><dd>{viralStats?.uniqueJurors ?? "—"}</dd></div>
+          <div><dt>MARKETS NOMINATED</dt><dd>{viralStats?.nominations ?? "—"}</dd></div>
+          <div><dt>SHARE INTENTS</dt><dd>{viralStats?.shares ?? "—"}</dd></div>
+          <div><dt>REFERRED JURORS</dt><dd>{viralStats?.referredJurors ?? "—"}</dd></div>
+        </dl>
+        <p>every number is backed by a timestamped, deduplicated Convex event. anonymous pageviews are intentionally excluded.</p>
+      </section>
+
       <section className="distribution-strip">
         <div>
           <span>HERMES DISTRIBUTION LOOP</span>
@@ -156,7 +266,7 @@ export default function Dashboard() {
       <footer className="dashboard-footer">
         <span>WYRD / BUILT IN BANGALORE</span>
         <span>commentary, not financial advice.</span>
-        <a href="/">back to transmission ↑</a>
+        <Link href="/">back to transmission ↑</Link>
       </footer>
       <a className="telegram-float" href="/telegram" aria-label="Open the WYRD Telegram bot">
         <span>↗</span> Telegram bot

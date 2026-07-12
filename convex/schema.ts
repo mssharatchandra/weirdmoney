@@ -26,4 +26,26 @@ export default defineSchema({
     platform: v.union(v.literal("x"), v.literal("tg")),
     postedAt: v.number(),
   }).index("by_postedAt", ["postedAt"]),
+
+  viralActions: defineTable({
+    visitorId: v.string(),
+    actionKey: v.string(),
+    kind: v.union(v.literal("nominate"), v.literal("share")),
+    marketId: v.string(),
+    question: v.string(),
+    channel: v.optional(
+      v.union(
+        v.literal("x"),
+        v.literal("telegram"),
+        v.literal("whatsapp"),
+        v.literal("native"),
+        v.literal("copy"),
+      ),
+    ),
+    referrer: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_visitor_action", ["visitorId", "actionKey"])
+    .index("by_createdAt", ["createdAt"])
+    .index("by_market", ["marketId"]),
 });

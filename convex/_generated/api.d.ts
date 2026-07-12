@@ -11,6 +11,7 @@
 import type * as http from "../http.js";
 import type * as posts from "../posts.js";
 import type * as signups from "../signups.js";
+import type * as viralActions from "../viralActions.js";
 
 import type {
   ApiFromModules,
@@ -22,6 +23,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   posts: typeof posts;
   signups: typeof signups;
+  viralActions: typeof viralActions;
 }>;
 
 /**

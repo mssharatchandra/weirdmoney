@@ -21,3 +21,22 @@ test("contains the complete WYRD launch experience", async () => {
   assert.match(signupRoute, /WYRD_CONVEX_URL/);
   assert.doesNotMatch(page + layout, /codex-preview|Your site is taking shape/);
 });
+
+test("ships a measurable viral loop instead of anonymous vanity counters", async () => {
+  const [dashboard, proof, actionRoute, jurorToken, schema] = await Promise.all([
+    readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/proof/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/viral-action/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/juror-token.ts", import.meta.url), "utf8"),
+    readFile(new URL("../../convex/schema.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(dashboard, /weirdness jury/i);
+  assert.match(dashboard, /nominate weirdest/i);
+  assert.match(dashboard, /referred jurors/i);
+  assert.match(proof, /NO DECKS\. NO SCREENSHOTS/i);
+  assert.match(actionRoute, /allowedKinds/);
+  assert.match(actionRoute, /verifyJurorToken/);
+  assert.match(jurorToken, /createHmac/);
+  assert.match(schema, /viralActions/);
+});
