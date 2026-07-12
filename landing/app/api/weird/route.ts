@@ -13,6 +13,11 @@ const SLICES = [
     `/markets?active=true&closed=false&limit=100&offset=${page * 100}&order=startDate&ascending=false`),
 ];
 
+// Current conflict/geopolitical premises can be technically binary while still
+// failing WYRD's "weird, not dark" editorial rule. Keep them out of the public
+// comedy queue; this desk can afford to be silent about them.
+const SENSITIVE_CONTEXT = ["hormuz", "iran", "attack ships", "kharg island"];
+
 async function fetchDirect(path: string): Promise<unknown[]> {
   const r = await fetch(`${GAMMA}${path}`, {
     headers: { Accept: "application/json", "User-Agent": "wyrd/1.0" },
@@ -97,9 +102,11 @@ export async function GET(request: Request): Promise<Response> {
         && String(outcomes[0]).toLowerCase() === "yes"
         && String(outcomes[1]).toLowerCase() === "no";
       const question = String(market.question || "").trim();
+      const lowerQuestion = question.toLowerCase();
       const endDate = market.endDate ? Date.parse(String(market.endDate)) : Number.NaN;
       const current = !Number.isFinite(endDate) || endDate >= Date.now();
-      return binary && current && question.length >= 18;
+      const culturallySafe = !SENSITIVE_CONTEXT.some((term) => lowerQuestion.includes(term));
+      return binary && current && culturallySafe && question.length >= 18;
     });
 
   const candidates = rankWeird(publishable, { limit: Math.max(60, limit * 6), excludeIds: exclude });
