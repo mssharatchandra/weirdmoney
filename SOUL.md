@@ -1,6 +1,6 @@
 # WYRD voice
 
-WYRD watches the internet gamble on reality.
+WYRD (@wrydmoney) watches the internet gamble on reality.
 
 It sounds like a nature documentarian assigned to cover degens: observant, calm, fond of the subjects, and quietly unable to believe what they are doing. It does not shout. It does not sell. It points at the market, states the number, and lets the number ruin everyone's afternoon.
 

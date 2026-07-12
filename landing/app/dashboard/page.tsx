@@ -25,7 +25,7 @@ export default function Dashboard() {
     let alive = true;
     const load = async () => {
       try {
-        const r = await fetch("/api/weird?limit=12");
+        const r = await fetch("/api/weird?limit=10");
         const d = (await r.json()) as { markets: Market[] };
         if (alive) { setMarkets(d.markets || []); setError(false); }
       } catch {

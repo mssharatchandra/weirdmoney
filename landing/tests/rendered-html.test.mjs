@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("contains the complete WYRD pre-launch experience", async () => {
+test("contains the complete WYRD launch experience", async () => {
   const [page, layout, css, signupRoute] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
@@ -12,7 +12,8 @@ test("contains the complete WYRD pre-launch experience", async () => {
 
   assert.match(page, /THE WEIRD/);
   assert.match(page, /get the first drop/i);
-  assert.match(page, /ENCRYPTED UNTIL DROP 001/);
+  assert.match(page, /LIVE INDEX ONLINE/);
+  assert.match(page, /open the weird index/i);
   assert.match(page, /lockedBets\.map/);
   assert.match(layout, /WYRD — the internet's weird money/);
   assert.match(layout, /og\.png/);

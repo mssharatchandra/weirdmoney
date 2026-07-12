@@ -3,9 +3,14 @@
 import { rankWeird, normalizeMarket } from "../../../lib/weird.mjs";
 
 const GAMMA = "https://gamma-api.polymarket.com";
+// Gamma caps a page at 100 records. Scan enough high-volume and newly-created
+// pages to find genuinely odd premises instead of filling the index with plain
+// sports/politics markets that merely have extreme prices.
 const SLICES = [
-  "/markets?active=true&closed=false&limit=200&order=volume24hr&ascending=false",
-  "/markets?active=true&closed=false&limit=200&order=startDate&ascending=false",
+  ...Array.from({ length: 6 }, (_, page) =>
+    `/markets?active=true&closed=false&limit=100&offset=${page * 100}&order=volume24hr&ascending=false`),
+  ...Array.from({ length: 4 }, (_, page) =>
+    `/markets?active=true&closed=false&limit=100&offset=${page * 100}&order=startDate&ascending=false`),
 ];
 
 async function fetchDirect(path: string): Promise<unknown[]> {

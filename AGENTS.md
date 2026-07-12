@@ -2,11 +2,11 @@
 
 > Single source of truth for every agent (Claude, Codex, Hermes) working on WYRD.
 > **Read this first. Update it after any meaningful change.** Keep it terse and current.
-> Last updated: 2026-07-12 by Codex (session: Vercel consolidation).
+> Last updated: 2026-07-12 by Codex (session: demo wiring).
 
 ## What WYRD is
 An autonomous agent that hunts the weirdest live Polymarket bets and delivers them
-as memes — on X (@wyrdmoney), a live web dashboard, and a Telegram subscription.
+as memes — on X (@wrydmoney), a live web dashboard, and a Telegram subscription.
 Hackathon: Hermes Buildathon, **Virality track**. Positioning: entertainment;
 "polymarket is banned in india, we watch it so you don't have to." Distribution IS
 the value. Strategy + scope in `plan.md` / `SPEC.md` (SPEC v3 wins on conflict).
@@ -14,7 +14,7 @@ the value. Strategy + scope in `plan.md` / `SPEC.md` (SPEC v3 wins on conflict).
 ## Canonical facts (decisions — do not silently diverge)
 - **Canonical URL: the Vercel production URL for now; `wyrd.money` later.**
   Routes: `/` landing · `/dashboard` Weird Index · `/join` signup · `/telegram`
-  redirect to bot · `/x` redirect to @wyrdmoney · `/api/*` backend.
+  redirect to bot · `/x` redirect to @wrydmoney · `/api/*` backend.
 - **Hosting: Vercel free tier for the complete web surface.** `landing/` is a standard
   Next.js app. Cloudflare Worker remains an optional later power-up/gateway.
 - **Signups + posts store: Convex** (earns +25). ONE source of truth for the 25x
@@ -37,7 +37,7 @@ Polymarket ──(edge: Vercel /api/weird)────────► scored wei
    ▲ blocked in IN                                     │
    │                                     Hermes wyrd-hunt (writes voice)
    │                                                    │
-   │                                     wyrd-post ──► X @wyrdmoney (reply#1 = link)
+   │                                     wyrd-post ──► X @wrydmoney (reply#1 = link)
    │                                          │                │
    └── dev only: r.jina.ai                    ├─ broadcast ──► Telegram subscribers
                                               └─ logPost ──► Convex
@@ -59,11 +59,12 @@ Polymarket ──(edge: Vercel /api/weird)────────► scored wei
 |---|---|---|---|
 | 1 | `packages/core` weird-scoring | Claude | ✅ tuned on live data |
 | 2 | `worker/` CF gateway | Claude | ✅ optional fallback; not required for Vercel launch |
-| 3 | `convex/` backend | Claude (via subagent) | ✅ built; auth complete, ToS/deploy pending |
+| 3 | `convex/` backend | Claude + Codex | ✅ production at `hip-squirrel-523`; Vercel connected |
 | 4 | `skills/wyrd` Hermes skills | Claude | ✅ registered in Hermes; runs live via Jina fallback |
 | 5 | `landing/` (Next.js/Vercel) | Codex | ✅ live at `https://wyrd-money.vercel.app` |
-| — | Telegram gateway | pending | ⬜ needs BotFather token + `hermes gateway setup` |
-| — | X / xurl auth | pending | ⬜ needs dev app; user sets `~/.xurl` outside agent session |
+| — | Telegram gateway | Codex | ✅ Hermes launchd service connected; pairing gate retained for safety |
+| — | X auth | Codex | ✅ OAuth identity verified as `@wrydmoney`; first posts awaiting copy approval |
+| — | Linkup context | Codex | 🟨 integrated in hunter; needs `LINKUP_API_KEY` to activate |
 | — | wyrd.money domain | pending | ⬜ optional after launch |
 
 ## Env (set in `~/.hermes/.env` for skills; in CF vars for landing)
@@ -84,6 +85,7 @@ See `skills/wyrd/wyrd.env.example`, `landing/.env.example`, and `RUNBOOK.md`.
 
 ## Next up
 - [x] Validate and deploy `landing/` to Vercel.
-- [ ] Set Vercel route env values after Convex + Telegram are live.
-- [ ] Deploy Convex and set `WYRD_CONVEX_URL` in Vercel + Hermes.
-- [ ] Connect: Telegram gateway, xurl auth, set env, first post, cron loop.
+- [x] Set Vercel route env values for Convex, Telegram, and X.
+- [x] Deploy Convex and set `WYRD_CONVEX_URL` in Vercel + Hermes.
+- [x] Connect Telegram gateway and verify X OAuth identity.
+- [ ] Add `LINKUP_API_KEY`, approve/publish first three posts, then schedule cron loop.

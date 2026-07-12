@@ -3,7 +3,7 @@
 The web product now ships as one standard Next.js application from `landing/`:
 
 ```
-Vercel /api/weird ─► Hermes wyrd-hunt ─► X @wyrdmoney
+Vercel /api/weird ─► Hermes wyrd-hunt ─► X @wrydmoney
           │                  └──────────► Telegram subscribers
           └─ /dashboard
 
@@ -16,7 +16,7 @@ Vercel /join ─► /api/signups ─► Convex ◄─ Telegram /start + Hermes p
 - `/dashboard` — live Weird Index
 - `/join` — email signup
 - `/telegram` — public redirect to the Telegram bot
-- `/x` — public redirect to @wyrdmoney
+- `/x` — public redirect to @wrydmoney
 - `/api/weird` — scored, safety-filtered Polymarket gateway
 - `/api/signups` — signup proxy to Convex
 
@@ -51,7 +51,7 @@ Production environment variables:
 ```text
 WYRD_CONVEX_URL=https://<deployment>.convex.site
 WYRD_TELEGRAM_URL=https://t.me/<bot_username>
-WYRD_X_URL=https://x.com/wyrdmoney
+WYRD_X_URL=https://x.com/wrydmoney
 ```
 
 No Polymarket key is required. The public Gamma API is read-only.

@@ -77,7 +77,7 @@ export default function Home() {
         <div className="nav-meta">
           <span className="live-dot" /> scanning the timeline
         </div>
-        <a className="nav-cta" href="#join">join the drop</a>
+        <a className="nav-cta" href="/dashboard">open the weird index →</a>
       </nav>
 
       <section className="hero" id="top">
@@ -108,7 +108,7 @@ export default function Home() {
       <section className="index-section">
         <div className="section-head">
           <div>
-            <p className="kicker">LIVE SOON</p>
+            <p className="kicker">LIVE NOW</p>
             <h2>THE WEIRD<br />INDEX™</h2>
           </div>
           <div className="index-explainer">
@@ -117,10 +117,10 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="vault" aria-label="Top ten markets are locked until launch">
+        <div className="vault" aria-label="Preview of the live top ten markets">
           <div className="vault-bar">
             <span>WYRD TERMINAL / PUBLIC FEED</span>
-            <span className="vault-status">● ENCRYPTED UNTIL DROP 001</span>
+            <span className="vault-status">● LIVE INDEX ONLINE</span>
           </div>
           <div className="market-header">
             <span>#</span><span>MARKET</span><span>ODDS</span><span>VOLUME</span><span>WYRD</span>
@@ -139,8 +139,8 @@ export default function Home() {
           ))}
           <div className="vault-lock">
             <span className="lock-glyph">⌁</span>
-            <p>the odds exist.<br />you are not ready for them.</p>
-            <a href="#join">request access →</a>
+            <p>the odds exist.<br />the top ten are now live.</p>
+            <a href="/dashboard">open the weird index →</a>
           </div>
         </div>
       </section>

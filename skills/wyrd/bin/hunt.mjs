@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// WYRD hunt — fetch the weirdest live markets from the CF gateway (which already
+// WYRD hunt — fetch the weirdest live markets from the Vercel gateway (which already
 // scores + safety-filters them), minus anything we've posted recently, and print
 // candidates for the writer. Never calls Polymarket directly (India-blocked).
 //
@@ -13,6 +13,7 @@ import { dirname, join } from "node:path";
 
 const GATEWAY = process.env.WYRD_GATEWAY_URL;
 const CONVEX = process.env.WYRD_CONVEX_URL; // e.g. https://<dep>.convex.site
+const LINKUP_KEY = process.env.LINKUP_API_KEY;
 const limit = parseInt(process.argv[2] || "5", 10);
 const __dir = dirname(fileURLToPath(import.meta.url));
 
@@ -23,10 +24,15 @@ function weirdViaJina(lim, exclude) {
   const { rankWeird } = require(join(__dir, "../../../packages/core/weird.js"));
   const pull = (path) =>
     JSON.parse(execFileSync("node", [join(__dir, "jina-fetch.mjs"), path], { maxBuffer: 64 * 1024 * 1024 }).toString());
-  const a = pull("/markets?limit=200&order=volume24hr&ascending=false&closed=false&active=true");
-  const b = pull("/markets?limit=200&order=startDate&ascending=false&closed=false&active=true");
+  const pages = [];
+  for (let page = 0; page < 6; page++) {
+    pages.push(pull(`/markets?limit=100&offset=${page * 100}&order=volume24hr&ascending=false&closed=false&active=true`));
+  }
+  for (let page = 0; page < 4; page++) {
+    pages.push(pull(`/markets?limit=100&offset=${page * 100}&order=startDate&ascending=false&closed=false&active=true`));
+  }
   const seen = new Set(); const all = [];
-  for (const m of [...a, ...b]) { const id = String(m.id); if (id && !seen.has(id)) { seen.add(id); all.push(m); } }
+  for (const m of pages.flat()) { const id = String(m.id); if (id && !seen.has(id)) { seen.add(id); all.push(m); } }
   return { markets: rankWeird(all, { limit: lim, excludeIds: exclude }) };
 }
 
@@ -34,6 +40,35 @@ async function getJSON(url, opts) {
   const r = await fetch(url, opts);
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
   return r.json();
+}
+
+function weirdEndpoint(base) {
+  const clean = base.replace(/\/$/, "");
+  return clean.endsWith("/weird") ? clean : `${clean}/weird`;
+}
+
+async function linkupContext(question) {
+  if (!LINKUP_KEY) return null;
+  const r = await fetch("https://api.linkup.so/v1/search", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LINKUP_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      q: `Find the freshest reliable news or public internet context relevant to this prediction-market question: ${question}`,
+      depth: "fast",
+      outputType: "searchResults",
+      maxResults: 3,
+    }),
+  });
+  if (!r.ok) throw new Error(`Linkup -> ${r.status}`);
+  const data = await r.json();
+  return (data.results || []).map((item) => ({
+    name: item.name,
+    url: item.url,
+    snippet: item.content || item.snippet || "",
+  }));
 }
 
 // Pull recently-posted marketIds so we don't repeat (best-effort).
@@ -53,7 +88,7 @@ async function recentlyPosted() {
   if (GATEWAY) {
     const q = new URLSearchParams({ limit: String(limit) });
     if (exclude.length) q.set("exclude", exclude.join(","));
-    ({ markets = [] } = await getJSON(`${GATEWAY}/weird?${q}`));
+    ({ markets = [] } = await getJSON(`${weirdEndpoint(GATEWAY)}?${q}`));
   } else {
     console.error("(no WYRD_GATEWAY_URL — using Jina dev fallback)");
     ({ markets = [] } = weirdViaJina(limit, exclude));
@@ -62,6 +97,14 @@ async function recentlyPosted() {
   if (!markets.length) {
     console.log("no fresh weird markets right now (all recent ones already posted, or gateway empty).");
     process.exit(0);
+  }
+
+
+  // Enrich only the leading candidate to keep the live-news loop cheap and fast.
+  // A Linkup failure never fabricates context and never blocks the verified odds.
+  if (LINKUP_KEY) {
+    try { markets[0].linkup = await linkupContext(markets[0].question); }
+    catch (error) { console.error(`(Linkup enrichment skipped: ${error.message})`); }
   }
 
   // Machine-readable block for the agent to act on.
@@ -76,6 +119,7 @@ async function recentlyPosted() {
       url: m.url,
       weird: m.weird?.score,
       india: !!m.weird?.breakdown?.india,
+      linkup: m.linkup || undefined,
     })),
     null, 2
   ));
