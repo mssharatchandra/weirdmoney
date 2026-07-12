@@ -63,7 +63,7 @@ Polymarket ──(edge: Vercel /api/weird)────────► scored wei
 | 4 | `skills/wyrd` Hermes skills | Claude | ✅ registered in Hermes; runs live via Jina fallback |
 | 5 | `landing/` (Next.js/Vercel) | Codex | ✅ live; editorial top-10 dashboard + share actions |
 | — | Telegram | Codex | ✅ public webhook active at `/api/telegram`; `/start` writes Convex |
-| — | X auth | Codex | ✅ OAuth identity verified as `@wrydmoney`; first posts awaiting copy approval |
+| — | X publishing | Codex | ✅ first 10 approved drops live with source replies + Convex receipts |
 | — | Unified publisher | Codex | ✅ guarded preview/publish path for X → Convex → Telegram |
 | — | Linkup context | Codex | ✅ integrated; 429/no-credit falls back to audited market-only mode |
 | — | wyrd.money domain | pending | ⬜ optional after launch |
@@ -87,6 +87,8 @@ See `skills/wyrd/wyrd.env.example`, `landing/.env.example`, and `RUNBOOK.md`.
   smoke row removed afterward. Zero rows currently means no real signup yet.
 - 2026-07-12: public Weird Index restricted to current, explicit Yes/No markets;
   ambiguous named-outcome and stale rows cannot enter the publish queue.
+- 2026-07-12: first ten dashboard-aligned X drops published from `@wrydmoney`;
+  Telegram broadcasts correctly reported zero recipients because linked count is zero.
 
 ## Next up
 - [x] Validate and deploy `landing/` to Vercel.
