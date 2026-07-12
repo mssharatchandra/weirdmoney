@@ -65,6 +65,7 @@ Polymarket ──(edge: Vercel /api/weird)────────► scored wei
 | — | Telegram | Codex | ✅ public webhook active at `/api/telegram`; `/start` writes Convex |
 | — | X publishing | Codex | ✅ 13 approved drops live with source replies + Convex receipts |
 | — | Unified publisher | Codex | ✅ guarded preview/publish path for X → Convex → Telegram |
+| — | Share QR | Codex | ✅ scannable WYRD poster at `/wyrd-qr.png`; exact URL decode verified |
 | — | Linkup context | Codex | ✅ integrated; 429/no-credit falls back to audited market-only mode |
 | — | wyrd.money domain | pending | ⬜ optional after launch |
 
@@ -91,6 +92,8 @@ See `skills/wyrd/wyrd.env.example`, `landing/.env.example`, and `RUNBOOK.md`.
   Telegram broadcasts correctly reported zero recipients because linked count is zero.
 - 2026-07-12: three fresh format-breaking drops published after pairing; each
   reached the now-linked Telegram subscriber as well as X and Convex.
+- 2026-07-12: generated a print/share QR poster for the canonical Vercel URL;
+  source generator and exported asset are committed for reproducible updates.
 
 ## Next up
 - [x] Validate and deploy `landing/` to Vercel.
