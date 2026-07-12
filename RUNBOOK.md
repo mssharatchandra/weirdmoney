@@ -19,6 +19,7 @@ Vercel /join ─► /api/signups ─► Convex ◄─ Telegram /start + Hermes p
 - `/x` — public redirect to @wrydmoney
 - `/api/weird` — scored, safety-filtered Polymarket gateway
 - `/api/signups` — signup proxy to Convex
+- `/api/telegram` — narrow Telegram webhook for public `/start` + safe lookups
 
 ## 1. Convex login and deployment
 
@@ -59,9 +60,10 @@ No Polymarket key is required. The public Gamma API is read-only.
 ## 3. Telegram
 
 1. Create the bot through `@BotFather` using `/newbot`.
-2. Save the token in `~/.hermes/.env` as `TELEGRAM_BOT_TOKEN`; never put it in
-   Vercel or commit it.
-3. Run `hermes gateway setup`, then start the gateway.
+2. Save the token in `~/.hermes/.env` for outbound broadcasts and as a sensitive
+   Vercel variable for the narrow public webhook; never commit it.
+3. Set `TELEGRAM_WEBHOOK_SECRET` in Vercel and register `/api/telegram` with
+   Telegram. Keep the terminal-capable Hermes gateway pairing-gated.
 4. Put the public `https://t.me/<bot_username>` URL in Vercel as
    `WYRD_TELEGRAM_URL`.
 

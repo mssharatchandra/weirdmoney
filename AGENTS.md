@@ -62,7 +62,7 @@ Polymarket ──(edge: Vercel /api/weird)────────► scored wei
 | 3 | `convex/` backend | Claude + Codex | ✅ production at `hip-squirrel-523`; Vercel connected |
 | 4 | `skills/wyrd` Hermes skills | Claude | ✅ registered in Hermes; runs live via Jina fallback |
 | 5 | `landing/` (Next.js/Vercel) | Codex | ✅ live at `https://wyrd-money.vercel.app` |
-| — | Telegram gateway | Codex | ✅ Hermes launchd service connected; pairing gate retained for safety |
+| — | Telegram | Codex | ✅ Hermes local gateway paired; public narrow webhook built for signup/lookups |
 | — | X auth | Codex | ✅ OAuth identity verified as `@wrydmoney`; first posts awaiting copy approval |
 | — | Linkup context | Codex | 🟨 integrated in hunter; needs `LINKUP_API_KEY` to activate |
 | — | wyrd.money domain | pending | ⬜ optional after launch |
