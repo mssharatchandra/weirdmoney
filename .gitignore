@@ -1,9 +1,13 @@
 node_modules/
 .wrangler/
 .env
-.env.local
+.env.*
+!.env.example
 *.log
 .convex/
 dist/
 .next/
 .vinext/
+
+__pycache__/
+*.py[cod]
