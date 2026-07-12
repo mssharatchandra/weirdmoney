@@ -47,6 +47,30 @@ async function pull(path: string): Promise<unknown[]> {
   try { return await fetchViaJina(path); } catch { return []; }
 }
 
+function diversityKey(market: Record<string, unknown>): string {
+  const q = String(market.question || "").toLowerCase();
+  const celebrity = /(kim kardashian|mrbeast|oprah winfrey|elon musk|kanye|taylor swift|drake)/.test(q);
+  if (celebrity && /(president|presidential nomination)/.test(q)) return "celebrity-president";
+  return q
+    .replace(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/g, "date")
+    .replace(/\d+/g, "#")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function diversify(markets: Record<string, unknown>[], limit: number) {
+  const picked: Record<string, unknown>[] = [];
+  const used = new Set<string>();
+  for (const market of markets) {
+    const key = diversityKey(market);
+    if (used.has(key)) continue;
+    used.add(key);
+    picked.push(market);
+    if (picked.length === limit) break;
+  }
+  return picked;
+}
+
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const limit = Math.min(parseInt(url.searchParams.get("limit") || "10", 10), 25);
@@ -62,7 +86,8 @@ export async function GET(request: Request): Promise<Response> {
     }
   }
 
-  const ranked = rankWeird(all, { limit, excludeIds: exclude })
+  const candidates = rankWeird(all, { limit: Math.max(60, limit * 6), excludeIds: exclude });
+  const ranked = diversify(candidates, limit)
     .map(({ __wyrd, ...m }: Record<string, unknown>) => m);
 
   return Response.json(
