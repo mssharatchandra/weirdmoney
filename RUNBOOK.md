@@ -94,3 +94,19 @@ curl https://<deployment>.convex.site/api/stats
 
 Then complete one real loop: signup → Convex row → Telegram link → Hermes hunt →
 X post → post logged in Convex.
+
+## One approved drop to every channel
+
+Preview first (the default makes no external writes), then add `--publish` only
+after the exact market, facts, copy, and links pass `SAFETY.md`:
+
+```bash
+uv run --with requests --with requests-oauthlib --with python-dotenv \
+  python scripts/publish_drop.py \
+  --market-id '<market-id>' \
+  --text '<approved copy>' \
+  --format '<memepool format>'
+```
+
+The real run publishes the main X post, adds the source/dashboard reply, logs
+the receipt to Convex, and broadcasts the same approved drop to Telegram.

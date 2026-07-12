@@ -64,6 +64,7 @@ Polymarket ──(edge: Vercel /api/weird)────────► scored wei
 | 5 | `landing/` (Next.js/Vercel) | Codex | ✅ live; editorial top-10 dashboard + share actions |
 | — | Telegram | Codex | ✅ public webhook active at `/api/telegram`; `/start` writes Convex |
 | — | X auth | Codex | ✅ OAuth identity verified as `@wrydmoney`; first posts awaiting copy approval |
+| — | Unified publisher | Codex | ✅ guarded preview/publish path for X → Convex → Telegram |
 | — | Linkup context | Codex | 🟨 integrated in hunter; needs `LINKUP_API_KEY` to activate |
 | — | wyrd.money domain | pending | ⬜ optional after launch |
 
