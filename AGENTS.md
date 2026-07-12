@@ -85,6 +85,8 @@ See `skills/wyrd/wyrd.env.example`, `landing/.env.example`, and `RUNBOOK.md`.
 - 2026-07-12: Vercel Web Analytics enabled and instrumented for visitor proof.
 - 2026-07-12: production signup write verified end-to-end through Vercel → Convex;
   smoke row removed afterward. Zero rows currently means no real signup yet.
+- 2026-07-12: public Weird Index restricted to current, explicit Yes/No markets;
+  ambiguous named-outcome and stale rows cannot enter the publish queue.
 
 ## Next up
 - [x] Validate and deploy `landing/` to Vercel.

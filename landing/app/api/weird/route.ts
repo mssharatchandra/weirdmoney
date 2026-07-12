@@ -86,7 +86,23 @@ export async function GET(request: Request): Promise<Response> {
     }
   }
 
-  const candidates = rankWeird(all, { limit: Math.max(60, limit * 6), excludeIds: exclude });
+  // The public index doubles as the publish queue. Only admit unambiguous,
+  // current Yes/No markets so an odds label can never be mapped to the wrong
+  // named outcome and stale active flags cannot leak resolved games.
+  const publishable = all
+    .map((market) => normalizeMarket(market) as Record<string, unknown>)
+    .filter((market) => {
+      const outcomes = (market.outcomes || []) as unknown[];
+      const binary = outcomes.length === 2
+        && String(outcomes[0]).toLowerCase() === "yes"
+        && String(outcomes[1]).toLowerCase() === "no";
+      const question = String(market.question || "").trim();
+      const endDate = market.endDate ? Date.parse(String(market.endDate)) : Number.NaN;
+      const current = !Number.isFinite(endDate) || endDate >= Date.now();
+      return binary && current && question.length >= 18;
+    });
+
+  const candidates = rankWeird(publishable, { limit: Math.max(60, limit * 6), excludeIds: exclude });
   const ranked = diversify(candidates, limit)
     .map(({ __wyrd, ...m }: Record<string, unknown>) => m);
 
