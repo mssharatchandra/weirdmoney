@@ -41,6 +41,12 @@ button, input { font: inherit; }
 .form-note { min-height: 1.1em; margin: 10px 6px 0; color: #8c8b82; font: 500 .64rem var(--font-geist-mono), monospace; text-transform: uppercase; letter-spacing: .06em; }
 .form-note.success { color: var(--acid); }
 .form-note.error { color: var(--hot); }
+.telegram-inline-cta { margin-top: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border: 1px solid #4a4a43; color: #aaa89e; text-decoration: none; text-transform: uppercase; font: 750 .62rem var(--font-geist-mono), monospace; transition: .18s ease; }
+.telegram-inline-cta b { color: var(--acid); font-weight: 900; }
+.telegram-inline-cta:hover { border-color: var(--acid); background: rgba(215,255,63,.06); }
+.telegram-float { position: fixed; right: 22px; bottom: 22px; z-index: 40; display: inline-flex; align-items: center; gap: 10px; padding: 14px 17px; background: var(--acid); color: var(--ink); border: 1px solid var(--ink); box-shadow: 5px 5px 0 var(--hot); text-decoration: none; text-transform: uppercase; font: 900 .66rem var(--font-geist-mono), monospace; transition: .18s ease; }
+.telegram-float:hover { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 var(--hot); }
+.telegram-float span { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: var(--acid); }
 .hero-stamp { position: absolute; right: -35px; top: 270px; border: 1px solid #3f4039; border-radius: 50%; width: 170px; height: 170px; display: flex; flex-direction: column; justify-content: center; align-items: center; transform: rotate(11deg); color: #65665d; font: 800 .7rem/1.6 var(--font-geist-mono), monospace; letter-spacing: .2em; }
 
 .ticker { overflow: hidden; background: var(--acid); color: var(--ink); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
@@ -224,4 +230,6 @@ footer p { margin: 5px 0 0; }
   .distribution-strip .mega-cta { justify-content: space-between; white-space: normal; }
   .dashboard-footer { grid-template-columns: 1fr; }
   .dashboard-footer a { justify-self: start; }
+  .telegram-inline-cta { align-items: flex-start; flex-direction: column; }
+  .telegram-float { right: 13px; bottom: 13px; padding: 12px 14px; }
 }

@@ -63,6 +63,9 @@ function SignupForm() {
       <p className={`form-note ${status}`} aria-live="polite">
         {message || "one email when the vault opens. no tips. no spam. just strange money."}
       </p>
+      <a className="telegram-inline-cta" href="/telegram">
+        <span>telegram bot is live</span><b>get instant drops ↗</b>
+      </a>
     </div>
   );
 }
@@ -168,6 +171,9 @@ export default function Home() {
         <p>commentary and cultural observation only.<br />we don&apos;t bet. we watch.</p>
         <p className="build-note">CURATED BY HERMES<br />BUILT IN BANGALORE</p>
       </footer>
+      <a className="telegram-float" href="/telegram" aria-label="Open the WYRD Telegram bot">
+        <span>↗</span> Telegram bot
+      </a>
     </main>
   );
 }

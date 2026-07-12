@@ -65,7 +65,7 @@ Polymarket ──(edge: Vercel /api/weird)────────► scored wei
 | — | Telegram | Codex | ✅ public webhook active at `/api/telegram`; `/start` writes Convex |
 | — | X auth | Codex | ✅ OAuth identity verified as `@wrydmoney`; first posts awaiting copy approval |
 | — | Unified publisher | Codex | ✅ guarded preview/publish path for X → Convex → Telegram |
-| — | Linkup context | Codex | 🟨 integrated in hunter; needs `LINKUP_API_KEY` to activate |
+| — | Linkup context | Codex | ✅ integrated; 429/no-credit falls back to audited market-only mode |
 | — | wyrd.money domain | pending | ⬜ optional after launch |
 
 ## Env (set in `~/.hermes/.env` for skills; in CF vars for landing)
@@ -83,6 +83,8 @@ See `skills/wyrd/wyrd.env.example`, `landing/.env.example`, and `RUNBOOK.md`.
 - 2026-07-12: Vercel project `wyrd-money` deployed publicly; GitHub connected
   with root directory `landing`; live `/api/weird` smoke test passes.
 - 2026-07-12: Vercel Web Analytics enabled and instrumented for visitor proof.
+- 2026-07-12: production signup write verified end-to-end through Vercel → Convex;
+  smoke row removed afterward. Zero rows currently means no real signup yet.
 
 ## Next up
 - [x] Validate and deploy `landing/` to Vercel.

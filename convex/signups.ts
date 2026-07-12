@@ -110,6 +110,21 @@ export const listSubscribers = query({
   },
 });
 
+/** Delete a known test signup from the CLI. Not exposed through HTTP. */
+export const deleteSignupByEmail = mutation({
+  args: { email: v.string() },
+  returns: v.number(),
+  handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
+    const rows = await ctx.db
+      .query("signups")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .collect();
+    for (const row of rows) await ctx.db.delete(row._id);
+    return rows.length;
+  },
+});
+
 /**
  * Demo proof numbers: total signups, how many are linked to Telegram, total posts.
  */

@@ -102,9 +102,15 @@ async function recentlyPosted() {
 
   // Enrich only the leading candidate to keep the live-news loop cheap and fast.
   // A Linkup failure never fabricates context and never blocks the verified odds.
+  markets[0].context = { provider: "market-only", status: "ready" };
   if (LINKUP_KEY) {
-    try { markets[0].linkup = await linkupContext(markets[0].question); }
-    catch (error) { console.error(`(Linkup enrichment skipped: ${error.message})`); }
+    try {
+      markets[0].linkup = await linkupContext(markets[0].question);
+      markets[0].context = { provider: "linkup", status: "ready" };
+    } catch (error) {
+      markets[0].context = { provider: "market-only", status: "linkup-unavailable" };
+      console.error(`(Linkup enrichment skipped: ${error.message}; continuing market-only)`);
+    }
   }
 
   // Machine-readable block for the agent to act on.
@@ -120,6 +126,7 @@ async function recentlyPosted() {
       weird: m.weird?.score,
       india: !!m.weird?.breakdown?.india,
       linkup: m.linkup || undefined,
+      context: m.context || { provider: "market-only", status: "ready" },
     })),
     null, 2
   ));

@@ -158,6 +158,9 @@ export default function Dashboard() {
         <span>commentary, not financial advice.</span>
         <a href="/">back to transmission ↑</a>
       </footer>
+      <a className="telegram-float" href="/telegram" aria-label="Open the WYRD Telegram bot">
+        <span>↗</span> Telegram bot
+      </a>
     </main>
   );
 }
