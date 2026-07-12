@@ -1,80 +1,94 @@
-# WYRD — go-live runbook
+# WYRD — Vercel go-live runbook
 
-Everything is built. This is the exact sequence to make it live. Steps marked
-**[you]** need your credentials/browser; the rest is done.
+The web product now ships as one standard Next.js application from `landing/`:
 
-## The loop (what's wired)
 ```
-CF Worker /weird  ──►  Hermes wyrd-hunt  ──►  wyrd-post (xurl)  ──►  X @wyrdmoney
-   (beats IN block)        (writes voice)      reply#1 = link         │
-        ▲                                       broadcast.mjs ────────┼──► Telegram subs
-   Polymarket                                   logPost ──► Convex ◄──┘
-                              landing (CF Pages) ──► /api/signup ──► Convex
+Vercel /api/weird ─► Hermes wyrd-hunt ─► X @wyrdmoney
+          │                  └──────────► Telegram subscribers
+          └─ /dashboard
+
+Vercel /join ─► /api/signups ─► Convex ◄─ Telegram /start + Hermes post log
 ```
 
-## Status
-| Piece | State |
-|---|---|
-| Weird-scoring core | ✅ built + tested |
-| CF Worker gateway | ✅ built, bundles clean · needs deploy **[you: Cloudflare]** |
-| Convex backend | ✅ built (6 fns + HTTP API) · needs deploy **[you: Convex]** |
-| Hermes skills (hunt/post/answer) | ✅ built, registered, scripts tested · need env + xurl/TG **[you]** |
-| Landing page | 🟡 Codex-built base in landing/ · needs takeover+wiring (stop Codex first) |
+## Public routes
 
-## Go-live sequence
+- `/` — pre-launch landing page
+- `/dashboard` — live Weird Index
+- `/join` — email signup
+- `/telegram` — public redirect to the Telegram bot
+- `/x` — public redirect to @wyrdmoney
+- `/api/weird` — scored, safety-filtered Polymarket gateway
+- `/api/signups` — signup proxy to Convex
 
-### 1. Deploy the data gateway  **[you: Cloudflare]**
+## 1. Convex login and deployment
+
+From the repository root:
+
 ```bash
-cd worker
-npx wrangler login            # browser
-npx wrangler deploy           # prints https://wyrd-gateway.<you>.workers.dev
-curl "https://wyrd-gateway.<you>.workers.dev/health"   # {ok:true, upstream:true}
-curl "https://wyrd-gateway.<you>.workers.dev/weird?limit=5"   # real weird markets!
+npm install
+npx convex dev --once
+npx convex deploy
 ```
-This is the moment we confirm the India block is beaten. Save the URL.
 
-### 2. Deploy Convex  **[you: Convex]**
+The first command that needs authentication opens a browser/device login. After
+deployment, copy the HTTP Actions URL ending in `.convex.site`; this is
+`WYRD_CONVEX_URL`.
+
+## 2. Vercel login and deployment
+
+From `landing/`:
+
 ```bash
-npm i convex
-npx convex dev                # browser login; leave running or `npx convex deploy`
-# note the .convex.site HTTP URL (see CONVEX_SETUP.md)
-curl https://<dep>.convex.site/api/stats     # {signups:0,linked:0,posts:0}
+npx vercel login
+npx vercel --prod
 ```
 
-### 3. Telegram bot  **[you: BotFather]**
+Set the Vercel project root to `landing` when importing the GitHub repository, or
+deploy directly while inside `landing/`.
+
+Production environment variables:
+
+```text
+WYRD_CONVEX_URL=https://<deployment>.convex.site
+WYRD_TELEGRAM_URL=https://t.me/<bot_username>
+WYRD_X_URL=https://x.com/wyrdmoney
+```
+
+No Polymarket key is required. The public Gamma API is read-only.
+
+## 3. Telegram
+
+1. Create the bot through `@BotFather` using `/newbot`.
+2. Save the token in `~/.hermes/.env` as `TELEGRAM_BOT_TOKEN`; never put it in
+   Vercel or commit it.
+3. Run `hermes gateway setup`, then start the gateway.
+4. Put the public `https://t.me/<bot_username>` URL in Vercel as
+   `WYRD_TELEGRAM_URL`.
+
+## 4. X
+
+The web app only needs the public account URL. Hermes posting needs a separate X
+developer app and OAuth authorization through `xurl`; keep those credentials in
+the local Hermes environment, not in Vercel.
+
+## 5. Hermes environment
+
+Set these locally in `~/.hermes/.env`:
+
+```text
+WYRD_GATEWAY_URL=https://<vercel-production-url>/api/weird
+WYRD_CONVEX_URL=https://<deployment>.convex.site
+WYRD_LANDING_URL=https://<vercel-production-url>
+TELEGRAM_BOT_TOKEN=<secret>
+WYRD_SKILL_DIR=/absolute/path/to/weirdmoney/skills/wyrd
+```
+
+## 6. Smoke test
+
 ```bash
-# @BotFather /newbot -> token ; @userinfobot -> your numeric id
-hermes gateway setup          # pick Telegram, paste token + your id
-hermes gateway run            # leave running = the bot is live
+curl https://<vercel-production-url>/api/weird?limit=3
+curl https://<deployment>.convex.site/api/stats
 ```
 
-### 4. X / Twitter  **[you: developer.x.com]**
-Install + auth xurl OUTSIDE the agent session (secret-safe):
-```bash
-curl -fsSL https://raw.githubusercontent.com/xdevplatform/xurl/main/install.sh | bash
-xurl auth oauth2              # after registering your app creds
-xurl auth status             # confirm
-```
-
-### 5. Wire the env  **[you: paste values]**
-Copy `skills/wyrd/wyrd.env.example` values into `~/.hermes/.env`:
-`WYRD_GATEWAY_URL`, `WYRD_CONVEX_URL`, `TELEGRAM_BOT_TOKEN`, `WYRD_SKILL_DIR`, `WYRD_LANDING_URL`.
-Then smoke-test the real pipeline:
-```bash
-WYRD_GATEWAY_URL=... WYRD_CONVEX_URL=... node skills/wyrd/bin/hunt.mjs 5
-```
-
-### 6. First post (manual, approval mode)
-In Hermes: `/wyrd-hunt` → review 3 drafts → pick → `/wyrd-post`. Confirm the tweet,
-the reply-link, the Convex `posts` row, and the Telegram drop.
-
-### 7. Automate
-```bash
-hermes cron add --name wyrd-loop --schedule "*/35 * * * *" --prompt "run /wyrd-hunt, pick the strongest draft, run /wyrd-post"
-hermes cron status
-```
-
-### 8. Landing (after Codex stopped)
-Take landing/ current state → point its signup at `WYRD_CONVEX_URL/api/signup`,
-replace placeholder Weird Index with a live fetch of `WYRD_GATEWAY_URL/weird`,
-add TG deeplink success + Datafast snippet, `npx wrangler pages deploy`.
+Then complete one real loop: signup → Convex row → Telegram link → Hermes hunt →
+X post → post logged in Convex.

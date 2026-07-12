@@ -1,3 +1,5 @@
+// GENERATED COPY of packages/core/weird.js — DO NOT EDIT BY HAND.
+// Re-sync with: node scripts/sync-weird.mjs
 // WYRD weird-scoring core — pure functions, no network, no deps.
 // Shared by the Cloudflare Worker (data gateway) and the Hermes skills.
 // A "market" here is a raw Polymarket Gamma API market object.
@@ -183,7 +185,4 @@ function isSafe(nm) {
   return !BANNED.some((w) => q.includes(w));
 }
 
-module.exports = {
-  parseMaybeJSON, num, normalizeMarket, weirdScore, rankWeird, isSafe,
-  ABSURD_WORDS, INDIA_WORDS, POP_WORDS,
-};
+export { parseMaybeJSON, num, normalizeMarket, weirdScore, rankWeird, isSafe, ABSURD_WORDS, INDIA_WORDS, POP_WORDS };

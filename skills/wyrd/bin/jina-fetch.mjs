@@ -21,9 +21,13 @@ const start = d.indexOf("[");
 if (start > 0) d = d.slice(start);
 const end = d.lastIndexOf("]");
 if (end > 0) d = d.slice(0, end + 1); // drop jina's trailing footer text
-d = d.replace(/\\(["\\])/g, "$1");
 
+// Jina returns EITHER clean JSON OR a fully "-escaped doc. Try clean first;
+// only reverse the escaping on failure (it would corrupt clean nested strings).
 let markets;
 try { markets = JSON.parse(d); }
-catch (e) { console.error("parse failed:", e.message); process.exit(1); }
+catch {
+  try { markets = JSON.parse(d.replace(/\\(["\\])/g, "$1")); }
+  catch (e) { console.error("parse failed:", e.message); process.exit(1); }
+}
 process.stdout.write(JSON.stringify(markets));

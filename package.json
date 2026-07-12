@@ -1,0 +1,15 @@
+{
+  "name": "wyrd",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "web:dev": "npm --prefix landing run dev",
+    "web:build": "npm --prefix landing run build",
+    "convex:dev": "convex dev",
+    "convex:deploy": "convex deploy"
+  },
+  "dependencies": {
+    "convex": "^1.42.1"
+  }
+}
