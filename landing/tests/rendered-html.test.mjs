@@ -14,6 +14,8 @@ test("contains the complete WYRD launch experience", async () => {
   assert.match(page, /get the first drop/i);
   assert.match(page, /LIVE INDEX ONLINE/);
   assert.match(page, /open the weird index/i);
+  assert.match(page, /@wrydmoney is posting/i);
+  assert.match(page, /watch the bot on X/i);
   assert.match(page, /lockedBets\.map/);
   assert.match(layout, /WYRD — the internet's weird money/);
   assert.match(layout, /og\.png/);

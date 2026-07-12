@@ -106,6 +106,8 @@ See `skills/wyrd/wyrd.env.example`, `landing/.env.example`, and `RUNBOOK.md`.
 - 2026-07-12: jury identities are server-issued anonymous UUIDs in signed,
   HttpOnly cookies. The action API rejects client-invented IDs; the signing
   secret is a production-only sensitive Vercel environment variable.
+- 2026-07-12: the landing page now exposes the live X bot in the primary nav,
+  beside the signup form, and in the footer; all route through canonical `/x`.
 - 2026-07-12: `/proof` exposes judge-mode counters directly from production
   Convex and uses `max(signups, uniqueJurors)`, never their unverified sum.
 

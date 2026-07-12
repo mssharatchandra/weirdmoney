@@ -63,9 +63,14 @@ function SignupForm() {
       <p className={`form-note ${status}`} aria-live="polite">
         {message || "one email when the vault opens. no tips. no spam. just strange money."}
       </p>
-      <a className="telegram-inline-cta" href="/telegram">
-        <span>telegram bot is live</span><b>get instant drops ↗</b>
-      </a>
+      <div className="social-inline-ctas">
+        <a className="x-inline-cta" href="/x">
+          <span>@wrydmoney is posting</span><b>watch the bot on X ↗</b>
+        </a>
+        <a className="telegram-inline-cta" href="/telegram">
+          <span>telegram bot is live</span><b>get instant drops ↗</b>
+        </a>
+      </div>
     </div>
   );
 }
@@ -80,7 +85,10 @@ export default function Home() {
         <div className="nav-meta">
           <span className="live-dot" /> scanning the timeline
         </div>
-        <a className="nav-cta" href="/dashboard">open the weird index →</a>
+        <div className="nav-actions">
+          <a className="nav-x" href="/x">follow @wrydmoney ↗</a>
+          <a className="nav-cta" href="/dashboard">open the weird index →</a>
+        </div>
       </nav>
 
       <section className="hero" id="top">
@@ -167,7 +175,7 @@ export default function Home() {
       </section>
 
       <footer>
-        <div><span className="wordmark"><span className="sigil">◉</span> WYRD</span><p>the internet&apos;s weird money.</p></div>
+        <div><span className="wordmark"><span className="sigil">◉</span> WYRD</span><p>the internet&apos;s weird money.<br /><a className="footer-social" href="/x">follow @wrydmoney on X ↗</a></p></div>
         <p>commentary and cultural observation only.<br />we don&apos;t bet. we watch.</p>
         <p className="build-note">CURATED BY HERMES<br />BUILT IN BANGALORE</p>
       </footer>
