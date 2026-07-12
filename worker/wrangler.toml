@@ -1,0 +1,8 @@
+name = "wyrd-gateway"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# Deploy:  cd worker && npx wrangler deploy
+# Dev:     cd worker && npx wrangler dev   (note: local dev still runs through
+#          your machine's network, so live Polymarket calls only work once
+#          deployed to the edge, or via `wrangler dev --remote`).
