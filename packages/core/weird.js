@@ -62,18 +62,30 @@ const ABSURD_WORDS = [
 const INDIA_WORDS = [
   "india", "modi", "rahul", "bjp", "congress", "rupee", "rbi", "sensex",
   "nifty", "bollywood", "cricket", "ipl", "kohli", "rohit", "bumrah",
-  "dhoni", "ambani", "adani", "delhi", "mumbai", "bcci", "world cup",
+  "dhoni", "ambani", "adani", "delhi", "mumbai", "bcci",
+  // note: NOT generic "world cup" — FIFA isn't India-relevant. Cricket words above.
 ];
 
 const POP_WORDS = [
-  "taylor swift", "elon", "musk", "trump", "kanye", "drake", "mrbeast",
-  "messi", "ronaldo", "bitcoin", "ethereum", "gta", "netflix", "spotify",
-  "openai", "chatgpt", "nvidia", "tesla", "apple", "super bowl", "oscars",
+  "taylor swift", "elon", "musk", "kanye", "ye", "drake", "mrbeast",
+  "messi", "ronaldo", "gta", "netflix", "spotify", "kardashian", "kim k",
+  "openai", "chatgpt", "nvidia", "oprah", "rock", "dwayne", "beyonce",
+  "grimes", "zuckerberg", "bezos", "andrew tate", "logan paul", "jake paul",
 ];
 
+// "[celebrity/entertainer] running for high office" is peak-weird even at $0 absurd
+// keyword hits (e.g. "Kim Kardashian for President"). Detect the collision.
+const OFFICE_WORDS = ["president", "prime minister", "governor", "mayor", "senate", "congress", "nobel", "pope", "knighted"];
+
+// Word-boundary matching so "dog" doesn't hit "Dogecoin" or "cat" hit "category".
+// Multi-word phrases ("loch ness") are matched as substrings (they're specific).
 function hits(text, words) {
   let n = 0;
-  for (const w of words) if (text.includes(w)) n++;
+  for (const w of words) {
+    if (w.includes(" ")) { if (text.includes(w)) n++; continue; }
+    const re = new RegExp("\\b" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+    if (re.test(text)) n++;
+  }
   return n;
 }
 
@@ -82,7 +94,12 @@ function weirdScore(nm) {
   const q = (nm.question || "").toLowerCase();
 
   // 1) Absurdity of premise (0..40) — the heaviest lever.
-  const absurdHits = hits(q, ABSURD_WORDS);
+  let absurdHits = hits(q, ABSURD_WORDS);
+  // celebrity + high office = absurd collision ("Kim Kardashian for President").
+  // office words use substring match so "presidential" counts as "president".
+  const popHitsForOffice = hits(q, POP_WORDS);
+  const officeHit = OFFICE_WORDS.some((w) => q.includes(w));
+  if (popHitsForOffice > 0 && officeHit) absurdHits += 2;
   const absurdity = Math.min(40, absurdHits * 16);
 
   // 2) Money on the line (0..22) — log-scaled; $ is what upgrades a joke.
@@ -104,7 +121,21 @@ function weirdScore(nm) {
   const popBonus = Math.min(6, hits(q, POP_WORDS) * 6);
   const recognizability = Math.min(12, indiaBonus + popBonus);
 
-  const raw = absurdity + money + longshot + heat + recognizability;
+  // Weirdness is the primary axis. Money/longshot/heat are AMPLIFIERS of a weird
+  // premise, not weird on their own — a boring expensive longshot is not weird.
+  // So when there's no absurd hook AND nothing recognizable, cap hard.
+  const hasHook = absurdity > 0;
+  const attention = money + longshot + heat; // 0..48
+  let raw;
+  if (hasHook) {
+    raw = absurdity + recognizability + attention; // full credit
+  } else if (recognizability > 0) {
+    // recognizable but not absurd (e.g. a big cricket/celeb market): mild credit
+    raw = recognizability + attention * 0.45;
+  } else {
+    // just an expensive bet — mildly interesting at most
+    raw = Math.min(28, attention * 0.5);
+  }
   const score = Math.max(0, Math.min(100, Math.round(raw)));
 
   return {

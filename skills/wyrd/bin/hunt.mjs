@@ -6,13 +6,28 @@
 // Env: WYRD_GATEWAY_URL (required)  WYRD_CONVEX_URL (optional, for dedupe)
 // Usage: node hunt.mjs [limit]
 
+import { createRequire } from "node:module";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
 const GATEWAY = process.env.WYRD_GATEWAY_URL;
 const CONVEX = process.env.WYRD_CONVEX_URL; // e.g. https://<dep>.convex.site
 const limit = parseInt(process.argv[2] || "5", 10);
+const __dir = dirname(fileURLToPath(import.meta.url));
 
-if (!GATEWAY) {
-  console.error("ERROR: set WYRD_GATEWAY_URL to your deployed CF worker (e.g. https://wyrd-gateway.<you>.workers.dev)");
-  process.exit(1);
+// No deployed gateway yet? Fall back to fetching via the Jina proxy + scoring
+// locally, so the skill is testable before the CF Worker is live.
+function weirdViaJina(lim, exclude) {
+  const require = createRequire(import.meta.url);
+  const { rankWeird } = require(join(__dir, "../../../packages/core/weird.js"));
+  const pull = (path) =>
+    JSON.parse(execFileSync("node", [join(__dir, "jina-fetch.mjs"), path], { maxBuffer: 64 * 1024 * 1024 }).toString());
+  const a = pull("/markets?limit=200&order=volume24hr&ascending=false&closed=false&active=true");
+  const b = pull("/markets?limit=200&order=startDate&ascending=false&closed=false&active=true");
+  const seen = new Set(); const all = [];
+  for (const m of [...a, ...b]) { const id = String(m.id); if (id && !seen.has(id)) { seen.add(id); all.push(m); } }
+  return { markets: rankWeird(all, { limit: lim, excludeIds: exclude }) };
 }
 
 async function getJSON(url, opts) {
@@ -34,9 +49,15 @@ async function recentlyPosted() {
 
 (async () => {
   const exclude = await recentlyPosted();
-  const q = new URLSearchParams({ limit: String(limit) });
-  if (exclude.length) q.set("exclude", exclude.join(","));
-  const { markets = [] } = await getJSON(`${GATEWAY}/weird?${q}`);
+  let markets;
+  if (GATEWAY) {
+    const q = new URLSearchParams({ limit: String(limit) });
+    if (exclude.length) q.set("exclude", exclude.join(","));
+    ({ markets = [] } = await getJSON(`${GATEWAY}/weird?${q}`));
+  } else {
+    console.error("(no WYRD_GATEWAY_URL — using Jina dev fallback)");
+    ({ markets = [] } = weirdViaJina(limit, exclude));
+  }
 
   if (!markets.length) {
     console.log("no fresh weird markets right now (all recent ones already posted, or gateway empty).");
