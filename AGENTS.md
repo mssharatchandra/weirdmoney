@@ -63,7 +63,7 @@ Polymarket ──(edge: Vercel /api/weird)────────► scored wei
 | 4 | `skills/wyrd` Hermes skills | Claude | ✅ registered in Hermes; runs live via Jina fallback |
 | 5 | `landing/` (Next.js/Vercel) | Codex | ✅ live; editorial top-10 dashboard + share actions |
 | — | Telegram | Codex | ✅ public webhook active at `/api/telegram`; `/start` writes Convex |
-| — | X publishing | Codex | ✅ first 10 approved drops live with source replies + Convex receipts |
+| — | X publishing | Codex | ✅ 13 approved drops live with source replies + Convex receipts |
 | — | Unified publisher | Codex | ✅ guarded preview/publish path for X → Convex → Telegram |
 | — | Linkup context | Codex | ✅ integrated; 429/no-credit falls back to audited market-only mode |
 | — | wyrd.money domain | pending | ⬜ optional after launch |
@@ -89,6 +89,8 @@ See `skills/wyrd/wyrd.env.example`, `landing/.env.example`, and `RUNBOOK.md`.
   ambiguous named-outcome and stale rows cannot enter the publish queue.
 - 2026-07-12: first ten dashboard-aligned X drops published from `@wrydmoney`;
   Telegram broadcasts correctly reported zero recipients because linked count is zero.
+- 2026-07-12: three fresh format-breaking drops published after pairing; each
+  reached the now-linked Telegram subscriber as well as X and Convex.
 
 ## Next up
 - [x] Validate and deploy `landing/` to Vercel.
