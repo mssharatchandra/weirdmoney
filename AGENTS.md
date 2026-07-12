@@ -80,6 +80,7 @@ See `skills/wyrd/wyrd.env.example`, `landing/.env.example`, and `RUNBOOK.md`.
   shared state layer and the optional CF Worker is retained for later.
 - 2026-07-12: Vercel project `wyrd-money` deployed publicly; GitHub connected
   with root directory `landing`; live `/api/weird` smoke test passes.
+- 2026-07-12: Vercel Web Analytics enabled and instrumented for visitor proof.
 
 ## Next up
 - [x] Validate and deploy `landing/` to Vercel.
